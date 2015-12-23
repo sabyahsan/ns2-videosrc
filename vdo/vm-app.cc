@@ -89,6 +89,46 @@ int VmApp::command(int argc, const char*const* argv){
     return (Application::command(argc, argv));
 }
 
+bool VmApp::set_cumrate(){
+    std::cout<<"reading the cumrate ";
+    cumrate_=0;
+    if( iFile_med_.is_open( ) )
+    {
+        std::string strLine;
+        double para[7];
+        while(getline(iFile_med_, strLine)) {
+            
+            int i=0;
+            std::size_t start = 0U;
+            std::size_t end = strLine.find(delimiter_);
+            while (end != std::string::npos)
+            {
+                std::string tmp = strLine.substr(start, end - start);
+                para[i++] = atoi(tmp.c_str());
+                start = end + delimiter_.length();
+                end = strLine.find(delimiter_, start);
+            }
+            std::string tmp = strLine.substr(start, end);
+            para[i] = atoi(tmp.c_str());
+            
+            cumrate_ += para[3]; //bytes
+            
+            // schedul next Input time
+            ip_timer_.resched(input_intervel);
+        }
+        cumrate_=cumrate_*8/para[6]; //para[6] is the timestamp in milliseconds
+        iFile_med_.clear();
+        iFile_med_.seekg(0, ios::beg);
+        std::cout<<cumrate_<<endl;
+        return TRUE;
+    }
+    else{
+        return FALSE;
+    }
+    
+}
+
+
 void VmApp::handle_input_med(){
     
     if( iFile_med_.is_open( ) )
@@ -98,13 +138,13 @@ void VmApp::handle_input_med(){
         if(getline(iFile_med_, strLine)) {
             
             int i=0;
-            double para[4];
+            double para[7];
 
             std::size_t start = 0U;
             std::size_t end = strLine.find(delimiter_);
             while (end != std::string::npos)
             {
-		std::string tmp = strLine.substr(start, end - start); 
+                std::string tmp = strLine.substr(start, end - start);
                 para[i++] = atoi(tmp.c_str());
                 start = end + delimiter_.length();
                 end = strLine.find(delimiter_, start);
@@ -112,9 +152,7 @@ void VmApp::handle_input_med(){
             std::string tmp = strLine.substr(start, end);
             para[i] = atoi(tmp.c_str());
             
-            mediarate_ = para[1];   //kbit/s
-            timestamp_ = para[2];
-            cumrate_ = para[3];
+            mediarate_ = para[2];   //kbit/s
             
             // schedul next Input time
             ip_timer_.resched(input_intervel);
@@ -143,11 +181,11 @@ void VmApp::handle_input_tar(){
             tar_timer_.resched(target_rate_intervel);
         }
         else{
-            std::cout << "target rate file is ended" << endl;
+            std::cout << "target rate file is finished" << endl;
         }
     }
         else{
-            std::cout << "target rate file is close" <<endl;
+            std::cout << "target rate file is closed" <<endl;
         }
 
 }
@@ -161,6 +199,11 @@ void VmApp::start(){
     seq_ = 0;
     running_ = 1;
    // tarrate_ = target_rate_*1000;
+    if(!set_cumrate())
+    {
+        std::cout << "Cumulative rate couldn't be set. Check that media file exists and is in the right format"<<endl;
+        return;
+    }
     handle_input_med();
     handle_input_tar();
     tarrate_ = target_rate_;
@@ -187,14 +230,14 @@ void VmApp::send_vm_pkt(){
         vmh_buff.seq = seq_++;         // VM sequece number
         vmh_buff.time = Scheduler::instance().clock(); // Current time
         
-      //  std::cout<<"send_vm_pkg tarrate_"<<tarrate_<<endl;
         
-        if (mediarate_>tarrate_) {
-            vmh_buff.mdrate = pow(tarrate_,2) / cumrate_; //Media rate kbps
-        }
-        else{
+//        if (mediarate_>tarrate_) {
+//            vmh_buff.mdrate = pow(tarrate_,2) / cumrate_; //Media rate kbps
+//        }
+//        else{
             vmh_buff.mdrate = (tarrate_ * mediarate_)/cumrate_;    //Media rate kbps
-        }
+//        }
+        std::cout<<"send_vm_pkg mdrate "<<vmh_buff.mdrate<<" seq "<<vmh_buff.seq<<endl;
     
         vmh_buff.nbytes = vmh_buff.mdrate * 1000 / (8 * frame_rate_);  // Size of VM frame (NOT UDP packet size)
         

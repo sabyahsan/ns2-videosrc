@@ -78,7 +78,7 @@ private:
     inline double next_snd_time();                          // (Sender)
     virtual void recv_msg(int nbytes, const char *msg = 0); // (Sender/Receiver)
     void set_target(const hdr_vm *);                                // (Sender)
-
+    bool set_cumrate(); //estimate cumulative rate of the input media; called by start
     
     double timestamp_;     //from file
     double mediarate_;     //from file
