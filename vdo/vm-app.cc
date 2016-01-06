@@ -95,7 +95,7 @@ bool VmApp::set_cumrate(){
     if( iFile_med_.is_open( ) )
     {
         std::string strLine;
-        double para[7];
+        double para[10];
         while(getline(iFile_med_, strLine)) {
             
             int i=0;
@@ -111,12 +111,12 @@ bool VmApp::set_cumrate(){
             std::string tmp = strLine.substr(start, end);
             para[i] = atoi(tmp.c_str());
             
-            cumrate_ += para[3]; //bytes
+            cumrate_ += para[6]; //bytes
             
             // schedul next Input time
             ip_timer_.resched(input_intervel);
         }
-        cumrate_=cumrate_*8/para[6]; //para[6] is the timestamp in milliseconds
+        cumrate_=cumrate_*8/para[4]; //para[4] is the timestamp in milliseconds
         iFile_med_.clear();
         iFile_med_.seekg(0, ios::beg);
         std::cout<<cumrate_<<endl;
@@ -138,7 +138,7 @@ void VmApp::handle_input_med(){
         if(getline(iFile_med_, strLine)) {
             
             int i=0;
-            double para[7];
+            double para[10];
 
             std::size_t start = 0U;
             std::size_t end = strLine.find(delimiter_);
@@ -152,9 +152,10 @@ void VmApp::handle_input_med(){
             std::string tmp = strLine.substr(start, end);
             para[i] = atoi(tmp.c_str());
             
-            mediarate_ = para[2];   //kbit/s
-            
-            // schedul next Input time
+            mediarate_ = para[6];   //bytes
+            timestamp_ = para[4];   //timestamp
+            std::cout<<"The timestamp from file "<<timestamp_<<" mediarate "<<mediarate_<<endl;
+            // schedule next Input time
             ip_timer_.resched(input_intervel);
         }
         else{
@@ -192,7 +193,7 @@ void VmApp::handle_input_tar(){
 
 void VmApp::start(){
 
-    delimiter_ = " ";
+    delimiter_ = "\t";
     iFile_med_.open(filename_med_); //open file
     iFile_tar_.open(filename_tar_);
     
@@ -237,9 +238,9 @@ void VmApp::send_vm_pkt(){
 //        else{
             vmh_buff.mdrate = (tarrate_ * mediarate_)/cumrate_;    //Media rate kbps
 //        }
-        std::cout<<"send_vm_pkg mdrate "<<vmh_buff.mdrate<<" seq "<<vmh_buff.seq<<endl;
+//        std::cout<<"send_vm_pkg mdrate "<<vmh_buff.mdrate<<" seq "<<vmh_buff.seq<<endl;
     
-        vmh_buff.nbytes = vmh_buff.mdrate * 1000 / (8 * frame_rate_);  // Size of VM frame (NOT UDP packet size)
+        vmh_buff.nbytes = vmh_buff.mdrate * 1000 / 8;  // Size of VM frame (NOT UDP packet size)
         
         agent_->sendmsg(vmh_buff.nbytes, (char*) &vmh_buff);  // send to UDP
         //Applications can access UDP agents via the sendmsg() function in C++
@@ -255,7 +256,8 @@ void VmApp::send_vm_pkt(){
 double VmApp::next_snd_time()
 {
     // Recompute interval
-    interval_ = (double)1/frame_rate_;
+    interval_ = timestamp_/1000;
+    std::cout<<"interval "<<timestamp_<<endl;
     
     double next_time_ = interval_;
   
