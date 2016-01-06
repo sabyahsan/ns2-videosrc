@@ -177,7 +177,7 @@ void VmApp::handle_input_tar(){
             para = atoi(strLine2.c_str());
             target_rate_ = para ;  //kbps
             tarrate_ = target_rate_ ;
-            std::cout << "handle target_rate_ tarrate" <<tarrate_<<endl;
+          //  std::cout << "handle target_rate_ tarrate" <<tarrate_<<endl;
             tar_timer_.resched(target_rate_intervel);
         }
         else{
@@ -207,7 +207,7 @@ void VmApp::start(){
     handle_input_med();
     handle_input_tar();
     tarrate_ = target_rate_;
-    std::cout << "target rate" <<target_rate_ <<" tarrate_"<< tarrate_ <<endl;
+//    std::cout << "target rate" <<target_rate_ <<" tarrate_"<< tarrate_ <<endl;
     
     send_vm_pkt();       //send data
     
@@ -239,7 +239,7 @@ void VmApp::send_vm_pkt(){
 //        }
     
         vmh_buff.nbytes = vmh_buff.mdrate * 1000 / (8 * frame_rate_);  // Size of VM frame (NOT UDP packet size)
-        std::cout<<"send_vm_pkg mdrate "<<vmh_buff.mdrate<<" seq "<<vmh_buff.seq<<" size "<<vmh_buff.nbytes<<endl;
+        //std::cout<<"send_vm_pkg mdrate "<<vmh_buff.mdrate<<" seq "<<vmh_buff.seq<<" size "<<vmh_buff.nbytes<<endl;
         
         agent_->sendmsg(vmh_buff.nbytes, (char*) &vmh_buff);  // send to UDP
         //Applications can access UDP agents via the sendmsg() function in C++
