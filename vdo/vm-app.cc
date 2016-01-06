@@ -90,7 +90,7 @@ int VmApp::command(int argc, const char*const* argv){
 }
 
 bool VmApp::set_cumrate(){
-    std::cout<<"reading the cumrate ";
+    //std::cout<<"reading the cumrate ";
     cumrate_=0;
     if( iFile_med_.is_open( ) )
     {
@@ -119,7 +119,7 @@ bool VmApp::set_cumrate(){
         cumrate_=cumrate_*8/para[6]; //para[6] is the timestamp in milliseconds
         iFile_med_.clear();
         iFile_med_.seekg(0, ios::beg);
-        std::cout<<cumrate_<<endl;
+        //std::cout<<cumrate_<<endl;
         return TRUE;
     }
     else{
@@ -207,7 +207,7 @@ void VmApp::start(){
     handle_input_med();
     handle_input_tar();
     tarrate_ = target_rate_;
- //   std::cout << "target rate" <<target_rate_ <<" tarrate_"<< tarrate_ <<endl;
+    std::cout << "target rate" <<target_rate_ <<" tarrate_"<< tarrate_ <<endl;
     
     send_vm_pkt();       //send data
     
@@ -237,9 +237,9 @@ void VmApp::send_vm_pkt(){
 //        else{
             vmh_buff.mdrate = (tarrate_ * mediarate_)/cumrate_;    //Media rate kbps
 //        }
-        std::cout<<"send_vm_pkg mdrate "<<vmh_buff.mdrate<<" seq "<<vmh_buff.seq<<endl;
     
         vmh_buff.nbytes = vmh_buff.mdrate * 1000 / (8 * frame_rate_);  // Size of VM frame (NOT UDP packet size)
+        std::cout<<"send_vm_pkg mdrate "<<vmh_buff.mdrate<<" seq "<<vmh_buff.seq<<" size "<<vmh_buff.nbytes<<endl;
         
         agent_->sendmsg(vmh_buff.nbytes, (char*) &vmh_buff);  // send to UDP
         //Applications can access UDP agents via the sendmsg() function in C++

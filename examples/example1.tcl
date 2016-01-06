@@ -58,9 +58,9 @@ set mmapp_s [new Application/VmApp]
 set mmapp_r [new Application/VmApp]
 $mmapp_s attach-agent $udp_s
 $mmapp_r attach-agent $udp_r
-$mmapp_s set frame_rate_ 30
+$mmapp_s set frame_rate_ 15
 $mmapp_s input-rate /home/saba/Desktop/SharedFolder/ns2-videosrc/samplefiles/m0-kLIMuGHbQ-vide
-$mmapp_s input-target /home/saba/Desktop/SharedFolder/target-rate.txt
+$mmapp_s input-target /home/saba/Desktop/SharedFolder/target_rate.txt
 
 #Simulation Scenario
 

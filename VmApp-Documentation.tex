@@ -18,7 +18,7 @@
 % \geometry{margin=2in} % for example, change the margins to 2 inches all round
 % \geometry{landscape} % set up the page for landscape
 %   read geometry.pdf for detailed page layout information
-
+\usepackage[font=small]{caption}
 \usepackage{graphicx} % support the \includegraphics command and options
 
 % \usepackage[parfill]{parskip} % Activate to begin paragraphs with an empty line rather than an indent
@@ -29,6 +29,8 @@
 \usepackage{paralist} % very flexible & customisable lists (eg. enumerate/itemize, etc.)
 \usepackage{verbatim} % adds environment for commenting out blocks of text & for better verbatim
 \usepackage{subfig} % make it possible to include more than one captioned figure/table in a single float
+\usepackage{changes} % for subscript
+
 % These packages are all incorporated in the memoir class to one degree or another...
 
 %%% HEADERS & FOOTERS
@@ -98,7 +100,26 @@
 \maketitle
 
 \section{Introduction}
-This document describes the Multimedia traffic Application for Ns-2 in brief. It includes the instructions on how to compile the code and a few examples to show its usage.
+This document describes the Video traffic Application (VmApp) for Ns-2 in brief. It includes the instructions on how to compile the code and a few examples to show its usage.
+
+\section{What it does}
+
+VmApp generates video traffic using a media file and a target file. Both files consist of media bitrate values for every second. The media files are included in the git package in the folder ns2-videosrc/samplefiles/. Each media file has 7 columns (0 - 6), but VmApp only uses three of them: column 2 is the number of bytes, column 3 is the instantaneous bit rate in kbps and  column 6 is the timestamp in milliseconds. The cumulative bit rate of the sample stream is calculated in the beginning by summing all the values in column 2 and dividing by the last timestamp in column 6. This is then used for calculating the sending bit rate R\textsubscript{achieve} as follows 
+
+
+\begin{equation}
+R_{achieve}= \frac{R_{media}}{R_{cumulative}} \times R_{target}
+\end{equation}
+\begin{figure}[!ht]
+  \centering
+    \includegraphics[width=0.8\textwidth]{docfiles/rates.pdf}
+  \caption{A comparison of the media and achieved rate when 1000kbps target rate was used.}
+\end{figure}
+
+This value is calculated per second, reading R\textsubscript{media} and R\textsubscript{target} from the respective files. The frame rate is defined by the user (if not the default value is used). Based on R\textsubscript{achieve} and the frame rate, VmApp can then calculate the size of each frame (all frames are of the same size during that second).  
+
+
+
 
 \section{How to build}
 
