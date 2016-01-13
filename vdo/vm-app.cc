@@ -89,6 +89,7 @@ int VmApp::command(int argc, const char*const* argv){
     return (Application::command(argc, argv));
 }
 
+/*calculate the cumulative rate of the sample file, the value is used for scaling */
 bool VmApp::set_cumrate(){
     //std::cout<<"reading the cumrate ";
     cumrate_=0;
